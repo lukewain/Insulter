@@ -1,0 +1,62 @@
+datasource db {
+    provider = "postgresql"
+    url      = env("DATABASE_URL")
+}
+
+generator client {
+    provider             = "prisma-client-py"
+    interface            = "asyncio"
+    recursive_type_depth = 5
+}
+
+model Blacklist {
+    id           BigInt @id
+    reason       String
+    until        BigInt
+    moderator    Admin  @relation(fields: [adminId], references: [id])
+    moderator_id BigInt
+    adminId      BigInt
+}
+
+model RegisteredUser {
+    id             BigInt  @id
+    name           String
+    is_blacklisted Boolean @default(false)
+}
+
+model Admin {
+    id              BigInt      @id // Ensure this is the Discord User ID
+    name            String
+    active          Boolean     @default(true)
+    blacklist_users Blacklist[]
+    botWide         Boolean     @default(false) // Will be reserved for users who can perform bot moderation actions in every server
+}
+
+model Feature {
+    // Possibility of auto creating features from within the cogs
+    id                 Int                        @id @default(autoincrement())
+    registeredName     String
+    frontendName       String
+    description        String
+    RegisteredChannels RegisteredFeatureChannel[]
+    loaded             Boolean                    @default(true) // Will enable feature to show as selectable when the feature is loaded
+}
+
+model RegisteredFeatureChannel {
+    // Due to limitations within the schema we will check if the guild has a channel already configured for that feature
+    id          Int     @id @default(autoincrement())
+    guild       Guild   @relation(fields: [guild_id], references: [id])
+    guild_id    BigInt
+    channel_id  BigInt
+    FeatureName Feature @relation(fields: [featureId], references: [id])
+    featureId   Int
+}
+
+model Guild {
+    // Each guild can have a specific channel for features
+    id                       BigInt                     @id // Ensure this is the Discord Guild ID
+    hasFeatureChannels       Boolean                    @default(false) // Is kept at false until a feature channel is created
+    ownerID                  BigInt
+    isBotBlacklisted         Boolean                    @default(false) // Will only be true if a global bot moderator bans that server from utilising the bot
+    RegisteredFeatureChannel RegisteredFeatureChannel[] // Will auto populate when a feature channel is set
+}
