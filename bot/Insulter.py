@@ -25,6 +25,8 @@ class Insulter(commands.Bot):
         
         self.config: helpers.Config = config
         self.prisma: Prisma = prisma
+        self.owner_id: int = config.owner_id
+        self.token = config.bot_token
 
         intents = discord.Intents.all()
         
@@ -44,6 +46,18 @@ class Insulter(commands.Bot):
     
     async def setup_hook(self):
         log.debug("Running setup hook")
+
+        '''
+        Keep only the required cogs for startup
+
+        Jishaku
+        Cog loading features
+
+        Load features on demand.
+        '''
+
+        # Add jishaku to load on startup
+        await self.load_extension("jishaku")
 
     async def on_ready(self):
         log.debug("Running on ready")

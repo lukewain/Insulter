@@ -1,13 +1,18 @@
 from prisma import Prisma
 import asyncio
 
-p = Prisma()
+from bot.Insulter import Insulter
 
-async def test():
+import helpers
+
+async def start():
+    p = Prisma()
     await p.connect()
-    # Query db to ensure proper connection
-    await p.admin.find_first()
-    print("Connected to database")
-    await p.disconnect()
 
-asyncio.run(test())
+    bot = Insulter(config=helpers.Config.from_env(), prisma=p)
+
+    await bot.start(bot.token)
+
+
+if __name__ == "__main__":
+    asyncio.run(start())

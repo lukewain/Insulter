@@ -40,6 +40,8 @@ model Feature {
     description        String
     RegisteredChannels RegisteredFeatureChannel[]
     loaded             Boolean                    @default(true) // Will enable feature to show as selectable when the feature is loaded
+    isLoggable         Boolean                    @default(false) // Will show if the feature is loggable to a channel
+    LogChannels        LogChannels[]
 }
 
 model RegisteredFeatureChannel {
@@ -59,4 +61,25 @@ model Guild {
     ownerID                  BigInt
     isBotBlacklisted         Boolean                    @default(false) // Will only be true if a global bot moderator bans that server from utilising the bot
     RegisteredFeatureChannel RegisteredFeatureChannel[] // Will auto populate when a feature channel is set
+}
+
+model Chat {
+    id           BigInt    @id
+    guildOne     BigInt
+    guildTwo     BigInt? // Will be null if it is not yet established
+    message_logs Message[]
+}
+
+model Message {
+    id          BigInt @id @default(autoincrement())
+    message     String
+    chat        Chat   @relation(fields: [chat_id], references: [id])
+    chat_id     BigInt
+    store_until BigInt // A datetime to store messages until
+}
+
+model LogChannels {
+    id        BigInt  @id // The id of the channel
+    feature   Feature @relation(fields: [featureId], references: [id])
+    featureId Int
 }

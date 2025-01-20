@@ -73,4 +73,17 @@ class InterServer(commands.Cog):
 
     async def interaction_check(self, interaction: discord.Interaction[Insulter]):
         # Pull blacklist data from table and check against user
-        ...
+        blacklistUser = await self.bot.prisma.blacklist.find_unique(where={"id": interaction.user.id})
+
+        if blacklistUser:
+            await interaction.response.send_message("You are blacklisted from using this bot", ephemeral=True)
+            return False
+        else:
+            return True
+        
+
+    comms = app_commands.Group(name="comms", description="Inter-Server Communications")
+
+    @comms.command(name="connect", description="Connect to another server")
+    async def connect(self, interaction: discord.Interaction[Insulter]):
+        await interaction.response.send_message("Connected to another server", ephemeral=True)
